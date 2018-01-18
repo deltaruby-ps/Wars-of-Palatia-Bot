@@ -29,6 +29,6 @@ joinRooms:
       stretching: false
       urls: false
     tourwhitelist: []
-master: acir
-password: conrad
-user: Triskellion
+master:
+password: 
+user: 
