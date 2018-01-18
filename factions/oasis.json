@@ -1,7 +1,16 @@
 {
 	"Building1A": {
-		"Name": "Workshop",
+		"Name": "Fringe Workshop",
+		"GC": 75,
+		"EC": 12,
+		"Max": 2,
+		"Info": "Every day, this building spawns a Level 1 Oasis creature of your choice."
+	}
+	"Building1A": {
+		"Name": "Black Market",
 		"GC": 40,
-		"EC": 12
+		"EC": 20,
+		"Max": 1,
+		"Info": "You gain an additional 10 Gold at the start of each day."
 	}
 }
