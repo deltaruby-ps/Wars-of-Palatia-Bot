@@ -6,7 +6,7 @@
 		"Max": 2,
 		"Info": "Every day, this building spawns a Level 1 Oasis creature of your choice."
 	}
-	"Building1A": {
+	"Building1B": {
 		"Name": "Black Market",
 		"GC": 40,
 		"EC": 20,
