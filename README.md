@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/QuiteQuiet/PokemonShowdownBot.svg?branch=master)](https://travis-ci.org/QuiteQuiet/PokemonShowdownBot)
 
 Pokemon Showdown Bot made in Python 3.6
 
