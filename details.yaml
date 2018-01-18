@@ -1,0 +1,34 @@
+---
+apikeys:
+  pastebin: '0'
+avatar: 0
+broadcastrank: +
+command: '~'
+joinRooms:
+  battledome:
+    allow games: false
+    moderate:
+      anything: false
+      banword: false
+      caps: false
+      groupchats: false
+      room: battledome
+      spam: false
+      stretching: false
+      urls: false
+    tourwhitelist: []
+  global:
+    allow games: false
+    moderate:
+      anything: false
+      banword: false
+      caps: false
+      groupchats: false
+      room: global
+      spam: false
+      stretching: false
+      urls: false
+    tourwhitelist: []
+master: acir
+password: conrad
+user: Triskellion
