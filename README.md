@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/QuiteQuiet/PokemonShowdownBot.svg?branch=master)](https://travis-ci.org/QuiteQuiet/PokemonShowdownBot)
 
-Pokemon Showdown Bot made in Python 3.4
+Pokemon Showdown Bot made in Python 3.6
 
 Detailed information can be found in the respective files.
 
@@ -16,13 +16,13 @@ The Showdown bot is built from three components:
 Setting up
 ----------
 #### Python version:
-- Python 3.4.2 (Supposedly works with 2.7 versions of the libraries too, but cannot confirm)
+- Python 3.6.2
 
 #### Guide:
-1. Clone the git repo to your desired location
-2. Use `pip install requirements.txt` to get relevant modules for the project
-3. Follow the instructions in `details-example.py` to configure it
-4. Run using `python app.py` (or `python3 app.py` if you have both versions installed)
+1. This version already contains each of the modules required. Make sure you have pip and virtualenv installed.
+2. On Windows: .\env\Scripts\activate
+   or, on Unix-based systems: source env/bin/activate
+3. Run by using python3 app.py
 
 License
 -------
@@ -35,6 +35,8 @@ Credits
 -------
 
 Owner
+- Acir
 
+Bot frame created by:
 - Quite Quiet
 # Wars-of-Palatia-Bot
