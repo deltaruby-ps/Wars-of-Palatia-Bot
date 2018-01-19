@@ -187,6 +187,7 @@ def startgame(robot, cmd, params, user, room):
             squadDict = mergeDict(playerInfoDict,basemap)
             filename = 'squads/squad' + whichSquad + '.json'
             upload(filename, squadDict)
+            initGame(filename)
             print('!htmlbox <h3 align="center">Game succesfully started.</h3>' + playerTable1v1(P1json, P2json))
             return ReplyObject('!htmlbox <h3 align="center">Game succesfully started.</h3>' + playerTable1v1(P1json, P2json), True)
         return ReplyObject('One of those players does not exist!', True)
@@ -195,9 +196,12 @@ def startgame(robot, cmd, params, user, room):
 def initGame(squadFileName):
     squadDict = download(squadFileName)
     # Initalising starting buildings for P1
-    P1faction = squadDict['P1Faction']
-    P1FactionInfo = download('factions/' + P1faction + '.json')
-    squadDict['Map']['D']['2'] = P1FactionInfo['Building1A']
+    P1FactionInfo = download('factions/' + squadDict['P1Faction'] + '.json')
+    squadDict['D']['2'] = P1FactionInfo['Building1A']
+    # Initalising starting buildings for P2
+    P2FactionInfo = download('factions/' + squadDict['P1Faction'] + '.json')
+    squadDict['D']['12'] = P2FactionInfo['Building1A']
+    upload(squadFileName,squadDict)
     
 def switchfaction(robot, cmd, params, user):
     if params.lower() in factionList:
