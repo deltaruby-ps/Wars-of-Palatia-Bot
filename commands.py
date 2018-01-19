@@ -78,6 +78,8 @@ def roomInfo(robot, cmd, params, user, room):
     return ReplyObject(room.users, False)
 
 def c(robot, cmd, params, user):
+    if user.id == '4mat':
+        return ReplyObject('smh 4-mat')
     return ReplyObject(params, True)
 
 def roll(robot,cmd,params,user):
@@ -97,7 +99,7 @@ def roll(robot,cmd,params,user):
     return ReplyObject(output, True)
 
 def host(robot, cmd, params, user, room):
-    if room.isPM != True:
+    if room.isPM == True:
         if user.id in appdList and params not in hostedList:
             hostedList.append(params)
             for x in [0,1,2]:
@@ -110,7 +112,7 @@ def host(robot, cmd, params, user, room):
             return ReplyObject(params + " is already hosted!", True)
         
 def currenthost(robot, cmd, params, user, room):
-    if room.isPM == True:
+    if room.isPM != True:
         hoststring = ''
         for i in hostedList:
             hoststring = hoststring + i + ', '
@@ -118,7 +120,7 @@ def currenthost(robot, cmd, params, user, room):
         return ReplyObject('Current hosts: ' + hosts + '.', True)
 
 def dehost(robot, cmd, params, user, room):
-    if room.isPM != True:
+    if room.isPM == (True or False):
         if params == '':
             if user.id in hostedList:
                 hostedList.remove(user.id)
@@ -162,8 +164,8 @@ def register(robot, cmd, params, user, room):
         else:
             return ReplyObject(paramsList[1] + ' is not a valid faction.', True)
 
-def playerTable1v1(P1Stats, P2Stats):
-    return str('<table align="center" border="2" colour="blue"><tr style="background-color: #A4C4F7"><th></th><th>Name</th><th>Faction</th><th>Level</th></tr><tr style="background-color: #A4C4F7"><th>P1</th><th>'+P1Stats['Name']+'</th><th>'+P1Stats['Current Faction'].title()+'</th><th>'+str(P1Stats[P1Stats['Current Faction']])+'</th></tr><tr style="background-color: #A4C4F7"><th>P2</th><th>'+P2Stats['Name']+'</th><th>'+P2Stats['Current Faction'].title()+'</th><th>'+str(P2Stats[P2Stats['Current Faction']])+'</th></tr></table>')
+def playerTable1v1(squadDict):
+    return str('<table align="center" border="2" colour="blue"><tr style="background-color: #A4C4F7"><th></th><th>Name</th><th>Faction</th><th>Level</th><th>Gold</th></tr><tr style="background-color: #A4C4F7"><th>P1</th><th>'+squadDict['P1Name']+'</th><th>'+squadDict['P1Faction'].title()+'</th><th>'+str(squadDict['P1Level'])+'</th><th>'+str(squadDict['P1Gold'])+'</th></tr><tr style="background-color: #A4C4F7"><th>P2</th><th>'+squadDict['P2Name']+'</th><th>'+squadDict['P2Faction'].title()+'</th><th>'+str(squadDict['P2Level'])+'</th><th>'+str(squadDict['P2Gold'])+'</tr></table>')
                 
 def startgame(robot, cmd, params, user, room):
     paramsList = params.split(',')
@@ -178,7 +180,9 @@ def startgame(robot, cmd, params, user, room):
                               "P1Faction": P1json["Current Faction"],
                               "P2Faction": P2json["Current Faction"],
                               "P1Level": P1json[P1json["Current Faction"]],
-                              "P2Level": P2json[P2json["Current Faction"]]}
+                              "P2Level": P2json[P2json["Current Faction"]],
+                              "P1Gold": 0,
+                              "P2Gold": 0}
             for x in [0,1,2]:
                 if user.id in squadOwners[x]:
                     whichSquad = squadOwners[x][0]
@@ -188,8 +192,8 @@ def startgame(robot, cmd, params, user, room):
             filename = 'squads/squad' + whichSquad + '.json'
             upload(filename, squadDict)
             initGame(filename)
-            print('!htmlbox <h3 align="center">Game succesfully started.</h3>' + playerTable1v1(P1json, P2json))
-            return ReplyObject('!htmlbox <h3 align="center">Game succesfully started.</h3>' + playerTable1v1(P1json, P2json), True)
+            print('!htmlbox <h3 align="center">Game succesfully started.</h3>' + playerTable1v1(squadDict))
+            return ReplyObject('!htmlbox <h3 align="center">Game succesfully started.</h3>' + playerTable1v1(squadDict), True)
         return ReplyObject('One of those players does not exist!', True)
     return ReplyObject('Sorry, only 1v1 mode is supported right now', True)
 
