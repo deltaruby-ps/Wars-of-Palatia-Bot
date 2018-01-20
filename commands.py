@@ -28,6 +28,9 @@ import math # For funsies
 
 from invoker import ReplyObject, Command
 
+#String is too large for python to handle without seriously slowing.
+from largefile import cmap
+
 from data.tiers import tiers, formats
 from data.links import Links, YoutubeLinks
 from data.pokedex import Pokedex
@@ -166,7 +169,7 @@ def register(robot, cmd, params, user, room):
 
 def playerTable1v1(squadDict):
     return str('<table align="center" border="2" colour="blue"><tr style="background-color: #A4C4F7"><th></th><th>Name</th><th>Faction</th><th>Level</th><th>Gold</th></tr><tr style="background-color: #A4C4F7"><th>P1</th><th>'+squadDict['P1Name']+'</th><th>'+squadDict['P1Faction'].title()+'</th><th>'+str(squadDict['P1Level'])+'</th><th>'+str(squadDict['P1Gold'])+'</th></tr><tr style="background-color: #A4C4F7"><th>P2</th><th>'+squadDict['P2Name']+'</th><th>'+squadDict['P2Faction'].title()+'</th><th>'+str(squadDict['P2Level'])+'</th><th>'+str(squadDict['P2Gold'])+'</tr></table>')
-                
+
 def startgame(robot, cmd, params, user, room):
     paramsList = params.split(',')
     if paramsList[0] == '1v1':
@@ -192,8 +195,8 @@ def startgame(robot, cmd, params, user, room):
             filename = 'squads/squad' + whichSquad + '.json'
             upload(filename, squadDict)
             initGame(filename)
-            print('!htmlbox <h3 align="center">Game succesfully started.</h3>' + playerTable1v1(squadDict))
-            return ReplyObject('!htmlbox <h3 align="center">Game succesfully started.</h3>' + playerTable1v1(squadDict), True)
+            print('!htmlbox <h3 align="center">Game successfully started.</h3>' + playerTable1v1(squadDict)+ cmap(squadDict))
+            return ReplyObject('!htmlbox <h3 align="center">Game succesfully started.</h3>' + playerTable1v1(squadDict) + cmap(squadDict), True)
         return ReplyObject('One of those players does not exist!', True)
     return ReplyObject('Sorry, only 1v1 mode is supported right now', True)
 
