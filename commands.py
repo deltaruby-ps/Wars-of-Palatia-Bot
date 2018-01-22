@@ -28,7 +28,7 @@ import math # For funsies
 
 from invoker import ReplyObject, Command
 
-#String is too large for python to handle without seriously slowing.
+#String is too large for IDLE to handle without seriously slowing.
 from largefile import cmap
 
 from data.tiers import tiers, formats
@@ -39,6 +39,9 @@ from data.replies import Lines
 
 from user import User
 import time
+
+buildingIDList = []
+creatureIDList = []
 
 appdList = ['acir']
 squadOwners = [['A', 'none'],['B', 'none'],['C', 'none']]
@@ -81,8 +84,6 @@ def roomInfo(robot, cmd, params, user, room):
     return ReplyObject(room.users, False)
 
 def c(robot, cmd, params, user):
-    if user.id == '4mat':
-        return ReplyObject('smh 4-mat')
     return ReplyObject(params, True)
 
 def roll(robot,cmd,params,user):
@@ -193,8 +194,8 @@ def startgame(robot, cmd, params, user, room):
             basemap = download('squads/basemap.json')
             squadDict = mergeDict(playerInfoDict,basemap)
             filename = 'squads/squad' + whichSquad + '.json'
-            upload(filename, squadDict)
             initGame(filename)
+            squadDict = download(filename)
             print('!htmlbox <h3 align="center">Game successfully started.</h3>' + playerTable1v1(squadDict)+ cmap(squadDict))
             return ReplyObject('!htmlbox <h3 align="center">Game succesfully started.</h3>' + playerTable1v1(squadDict) + cmap(squadDict), True)
         return ReplyObject('One of those players does not exist!', True)
@@ -205,10 +206,27 @@ def initGame(squadFileName):
     # Initalising starting buildings for P1
     P1FactionInfo = download('factions/' + squadDict['P1Faction'] + '.json')
     squadDict['D']['2'] = P1FactionInfo['Building1A']
+    squadDict['D']['2']['ID'] = findID('B')
     # Initalising starting buildings for P2
-    P2FactionInfo = download('factions/' + squadDict['P1Faction'] + '.json')
+    P2FactionInfo = download('factions/' + squadDict['P2Faction'] + '.json')
     squadDict['D']['12'] = P2FactionInfo['Building1A']
+    squadDict['D']['12']['ID'] = findID('B')
+    print(squadDict['D']['2']['ID'])
+    print(squadDict['D']['12']['ID'])
     upload(squadFileName,squadDict)
+    
+
+def findID(params):
+    if params == 'B':
+        for x in range(20):
+            if 'B' + str(x) not in buildingIDList:
+                buildingIDList.append('B' + str(x))
+                return 'B' + str(x+1)
+    elif params == 'C':
+        for x in range(20):
+            if 'C' + str(x) not in creatureIDList:
+                creatureIDList.append('C' + str(x))
+                return 'C' + str(x+1)
     
 def switchfaction(robot, cmd, params, user):
     if params.lower() in factionList:
