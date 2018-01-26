@@ -179,8 +179,8 @@ def startgame(robot, cmd, params, user, room):
         if os.path.isfile(P1Filename) == True and os.path.isfile(P2Filename) == True:
             P1json = download(P1Filename)
             P2json = download(P2Filename)
-            playerInfoDict = {"P1Name": P1json["Name"],
-                              "P2Name": P2json["Name"],
+            playerInfoDict = {"P1Name": removePunctuation(P1json["Name"]),
+                              "P2Name": removePunctuation(P2json["Name"]),
                               "P1Faction": P1json["Current Faction"],
                               "P2Faction": P2json["Current Faction"],
                               "P1Level": P1json[P1json["Current Faction"]],
@@ -194,9 +194,10 @@ def startgame(robot, cmd, params, user, room):
             basemap = download('squads/basemap.json')
             squadDict = mergeDict(playerInfoDict,basemap)
             filename = 'squads/squad' + whichSquad + '.json'
+            upload(filename,squadDict)
             initGame(filename)
-            squadDict = download(filename)
-            print('!htmlbox <h3 align="center">Game successfully started.</h3>' + playerTable1v1(squadDict)+ cmap(squadDict))
+            newDict = download(filename)
+            print('!htmlbox <h3 align="center">Game successfully started.</h3>' + playerTable1v1(newDict)+ cmap(newDict) + bcbox(newDict))
             return ReplyObject('!htmlbox <h3 align="center">Game succesfully started.</h3>' + playerTable1v1(squadDict) + cmap(squadDict), True)
         return ReplyObject('One of those players does not exist!', True)
     return ReplyObject('Sorry, only 1v1 mode is supported right now', True)
@@ -207,15 +208,38 @@ def initGame(squadFileName):
     P1FactionInfo = download('factions/' + squadDict['P1Faction'] + '.json')
     squadDict['D']['2'] = P1FactionInfo['Building1A']
     squadDict['D']['2']['ID'] = findID('B')
+    squadDict['D']['2']['Owner'] = squadDict['P1Name']
     # Initalising starting buildings for P2
     P2FactionInfo = download('factions/' + squadDict['P2Faction'] + '.json')
     squadDict['D']['12'] = P2FactionInfo['Building1A']
     squadDict['D']['12']['ID'] = findID('B')
+    squadDict['D']['12']['Owner'] = squadDict['P2Name']
     print(squadDict['D']['2']['ID'])
     print(squadDict['D']['12']['ID'])
     upload(squadFileName,squadDict)
-    
 
+def bcbox(squadDict):
+    bhtml = '<table align="center" border="2" colour="blue"><tr style="background-color: #A4C4F7"><th>ID</th><th>Name</th><th>Owner</th></tr>'
+    chtml = '<table align="center" border="2" colour="blue"><tr style="background-color: #A4C4F7"><th>ID</th><th>Name</th><th>HP</th><th>A</th><th>D</th><th>E</th><th>MP</th></tr>'
+    for x in ['A','B','C','D','E','F','G']:
+        for y in range(13):
+            if squadDict[x][str(y+1)]['ID'] != '':
+                if squadDict[x][str(y+1)]['ID'][0] == 'B':
+                    bhtml = bhtml + '<tr style="background-color: #A4C4F7"><th>'+squadDict[x][str(y+1)]['ID']+'</th><th>'+squadDict[x][str(y+1)]['Name']+'</th><th>'+squadDict[x][str(y+1)]['Owner']+'</th></tr>'
+                elif squadDict[x][str(y+1)]['ID'][0] == 'C':
+                    chtml = chtml + '<tr style="background-color: #A4C4F7"><th>'+squadDict[x][y+1]['ID']+'</th><th>'+squadDIct[x][y+1]
+    return bhtml + '</table>' + chtml + '</table>'
+
+def showmap(robot, cmd, params, user):
+    for x in [0,1,2]:
+        if user.id in squadOwners[x]:
+            whichSquad = squadOwners[x][0]
+            break
+    filename = 'squads/squad' + whichSquad + '.json'
+    squadDict = download(filename)
+    print('!htmlbox ' + playerTable1v1(squadDict)+ cmap(squadDict) + bcbox(squadDict))
+    return ReplyObject('!htmlbox' + playerTable1v1(squadDict) + cmap(squadDict), True)       
+        
 def findID(params):
     if params == 'B':
         for x in range(20):
@@ -227,6 +251,45 @@ def findID(params):
             if 'C' + str(x) not in creatureIDList:
                 creatureIDList.append('C' + str(x))
                 return 'C' + str(x+1)
+
+def move(robot, cmd, params, user):
+    for x in ['A','B','C']:
+        filename = 'squads/squadA.json' #make sure to fix
+        squadDict = download(filename)
+        if user.id == removePunctuation(squadDict['P1Name']).lower() or user.id == removePunctuation(squadDict['P2Name']).lower(): #ugly, fix this later
+            paramsList = params.strip(' ').split(',')
+            print(paramsList)
+            ID = paramsList[0]
+            letter = paramsList[1]
+            number = paramsList[2]
+            for x in ['A','B','C','D','E','F','G']:
+                for y in range(13):
+                    if ID == squadDict[x][str(y+1)]['ID']:
+                        data = squadDict[x][str(y+1)]
+                        coordsList = [x,str(y+1)]
+                        break
+            clear = squadDict[letter][number]
+            squadDict[letter][number] = data
+            squadDict[coordsList[0]][coordsList[1]] = clear
+            upload(filename,squadDict)
+            return ReplyObject('')
+
+def gold(robot, cmd, params, user):
+    if user.id in hostedList:
+        for x in [0,1,2]:
+            if user.id in squadOwners[x]:
+                whichSquad = squadOwners[x][0]
+                break
+        filename = 'squads/squad' + whichSquad + '.json'
+        squadDict = download(filename)
+        params = params.lower().strip(' ')          #Inefficient but am lazy
+        paramsList = params.split(',')
+        for y in range(4):
+            if 'P' + str(y+1) + 'Name' in squadDict.keys(): #If player in game
+                if removePunctuation(squadDict['P' + str(y+1) + 'Name']).lower() in paramsList:
+                    squadDict['P' + str(y+1) + 'Gold'] = int(squadDict['P' + str(y+1) + 'Gold']) + int(paramsList[0])
+                    squadDict['P' + str(y+1) + 'Gold'] = str(squadDict['P' + str(y+1) + 'Gold'])
+        upload(filename,squadDict)
     
 def switchfaction(robot, cmd, params, user):
     if params.lower() in factionList:
@@ -265,7 +328,7 @@ def playerinfo(robot, cmd, params, user):
         return ReplyObject('Sorry, you are not a registered player. PM any room auth (+, %, @, #) to get you signed up.', False)
     elif os.path.isfile(filename) == False:
         return ReplyObject('That player does not exist!')
-    with open(filename) as data_file:
+    with open(filename) as data_file:       #Archaic system
         data_loaded = json.load(data_file)
     currentFact = data_loaded['Current Faction']
     return ReplyObject('**' + data_loaded['Name'].title() + '** - **' + data_loaded['Current Faction'].title() + '** ' + str(data_loaded[currentFact]) + ' - **' + str(data_loaded['XP']) + 'XP**', True)
@@ -426,9 +489,12 @@ commands = [
     Command(['switchfaction', 'sf'], switchfaction),
     Command(['xp'], xp),
     Command(['startgame', 'sg'], startgame),
+    Command(['showmap', 'sm'], showmap),
+    Command(['move'], move),
     Command(['dehost'], dehost),
     Command(['r', 'roll'], roll),
     Command(['ri'], roomInfo),
+    Command(['gold'], gold),
     Command(['get'], get),
     Command(['host'], host),
     Command(['currenthosts', 'hosts'], currenthost),
