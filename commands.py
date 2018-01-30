@@ -124,7 +124,7 @@ def currenthost(robot, cmd, params, user, room):
         return ReplyObject('Current hosts: ' + hosts + '.', True)
 
 def dehost(robot, cmd, params, user, room):
-    if room.isPM == (True or False):
+    if room.isPM == (True or False): # this is to allow for testing
         if params == '':
             if user.id in hostedList:
                 hostedList.remove(user.id)
@@ -196,7 +196,7 @@ def startgame(robot, cmd, params, user, room):
             filename = 'squads/squad' + whichSquad + '.json'
             upload(filename,squadDict)
             initGame(filename)
-            newDict = download(filename)
+            newDict = download(filename)            
             print('!htmlbox <h3 align="center">Game successfully started.</h3>' + playerTable1v1(newDict)+ cmap(newDict) + bcbox(newDict))
             return ReplyObject('!htmlbox <h3 align="center">Game succesfully started.</h3>' + playerTable1v1(squadDict) + cmap(squadDict), True)
         return ReplyObject('One of those players does not exist!', True)
@@ -206,28 +206,53 @@ def initGame(squadFileName):
     squadDict = download(squadFileName)
     # Initalising starting buildings for P1
     P1FactionInfo = download('factions/' + squadDict['P1Faction'] + '.json')
-    squadDict['D']['2'] = P1FactionInfo['Building1A']
+    squadDict['D']['2'] = P1FactionInfo[P1FactionInfo['SB']]
     squadDict['D']['2']['ID'] = findID('B')
     squadDict['D']['2']['Owner'] = squadDict['P1Name']
     # Initalising starting buildings for P2
     P2FactionInfo = download('factions/' + squadDict['P2Faction'] + '.json')
-    squadDict['D']['12'] = P2FactionInfo['Building1A']
+    squadDict['D']['12'] = P2FactionInfo[P2FactionInfo['SB']]
     squadDict['D']['12']['ID'] = findID('B')
     squadDict['D']['12']['Owner'] = squadDict['P2Name']
-    print(squadDict['D']['2']['ID'])
-    print(squadDict['D']['12']['ID'])
     upload(squadFileName,squadDict)
 
+def addcreature(robot, cmd, params, user):
+    for x in ['A','B','C']:
+        filename = 'squads/squadA.json' #make sure to fix
+        squadDict = download(filename)      # wtf is this
+        print(removePunctuation(squadDict['P1Name']).lower())
+        if user.id == removePunctuation(squadDict['P1Name']).lower() or user.id == removePunctuation(squadDict['P2Name']).lower():
+            params = params.strip(' ')
+            paramsList = params.split (',')
+            for x in range(4):
+                if squadDict[removePunctuation('P' + str(x+1) + 'Name')].lower() == user.id:
+                    factionInfo = download('factions/' + squadDict['P' + str(x+1) + 'Faction'] + '.json')
+                    creatureDict = factionInfo[paramsList[0].title()]
+                    squadDict[paramsList[1].upper()][paramsList[2]] = creatureDict
+                    squadDict[paramsList[1].upper()][paramsList[2]]['ID'] = findID('C')
+                    squadDict[paramsList[1].upper()][paramsList[2]]['Owner'] = squadDict[removePunctuation('P' + str(x+1) + 'Name')]
+                    upload(filename, squadDict)
+                    return ReplyObject('')
+
+def creatureInfo(robot, cmd, params, user):
+    for x in factionList:
+        filename = 'factions/' + x + '.json'
+        factionDict = download(filename)
+        for y in factionDict.keys():
+            if factionDict[y]['Name'].lower() == params.lower():
+                return ReplyObject('**{}** | {} {} | {}HP {} Mana {}MP | {}ATK {}DEF | {} Efficency | Range: {} | Recruit Cost: {} | Spells: {} | Passives: {}'.format(factionDict[y]['Name'], x.title(), factionDict[y]['L'], factionDict[y]['HP'], factionDict[y]['Mana'], factionDict[y]['MP'], factionDict[y]['A'], factionDict[y]['D'], factionDict[y]['E'], factionDict[y]['R'], factionDict[y]['RC'], factionDict[y]['S'], factionDict[y]['P']), True) 
+                                         
 def bcbox(squadDict):
     bhtml = '<table align="center" border="2" colour="blue"><tr style="background-color: #A4C4F7"><th>ID</th><th>Name</th><th>Owner</th></tr>'
-    chtml = '<table align="center" border="2" colour="blue"><tr style="background-color: #A4C4F7"><th>ID</th><th>Name</th><th>HP</th><th>A</th><th>D</th><th>E</th><th>MP</th></tr>'
+    chtml = '<table align="center" border="2" colour="blue"><tr style="background-color: #A4C4F7"><th>ID</th><th>Name</th><th>Owner</th><th>HP</th><th>Mana</th><th>A</th><th>D</th><th>E</th><th>Range</th><th>MP</th></tr>'
     for x in ['A','B','C','D','E','F','G']:
+        print('checks')
         for y in range(13):
             if squadDict[x][str(y+1)]['ID'] != '':
                 if squadDict[x][str(y+1)]['ID'][0] == 'B':
                     bhtml = bhtml + '<tr style="background-color: #A4C4F7"><th>'+squadDict[x][str(y+1)]['ID']+'</th><th>'+squadDict[x][str(y+1)]['Name']+'</th><th>'+squadDict[x][str(y+1)]['Owner']+'</th></tr>'
                 elif squadDict[x][str(y+1)]['ID'][0] == 'C':
-                    chtml = chtml + '<tr style="background-color: #A4C4F7"><th>'+squadDict[x][y+1]['ID']+'</th><th>'+squadDIct[x][y+1]
+                    chtml = chtml + '<tr style="background-color: #A4C4F7"><th>'+squadDict[x][str(y+1)]['ID']+'</th><th>'+squadDict[x][str(y+1)]['Name']+'</th><th>'+squadDict[x][str(y+1)]['Owner']+'</th><th>'+str(squadDict[x][str(y+1)]['CHP'])+'/'+str(squadDict[x][str(y+1)]['HP'])+'</th><th>'+str(squadDict[x][str(y+1)]['Mana'])+'</th><th>'+str(squadDict[x][str(y+1)]['A'])+'</th><th>'+str(squadDict[x][str(y+1)]['D'])+'</th><th>'+str(squadDict[x][str(y+1)]['E'])+'</th><th>'+squadDict[x][str(y+1)]['R']+'</th><th>'+str(squadDict[x][str(y+1)]['MP'])+'</th></tr>'
     return bhtml + '</table>' + chtml + '</table>'
 
 def showmap(robot, cmd, params, user):
@@ -238,7 +263,7 @@ def showmap(robot, cmd, params, user):
     filename = 'squads/squad' + whichSquad + '.json'
     squadDict = download(filename)
     print('!htmlbox ' + playerTable1v1(squadDict)+ cmap(squadDict) + bcbox(squadDict))
-    return ReplyObject('!htmlbox' + playerTable1v1(squadDict) + cmap(squadDict), True)       
+    return ReplyObject('!code !htmlbox' + playerTable1v1(squadDict) + cmap(squadDict), True)       
         
 def findID(params):
     if params == 'B':
@@ -273,6 +298,27 @@ def move(robot, cmd, params, user):
             squadDict[coordsList[0]][coordsList[1]] = clear
             upload(filename,squadDict)
             return ReplyObject('')
+
+def hp(robot, cmd, params, user):
+    for x in ['A','B','C']:
+        filename = 'squads/squadA.json' #make sure to fix
+        squadDict = download(filename)
+        if user.id == removePunctuation(squadDict['P1Name']).lower() or user.id == removePunctuation(squadDict['P2Name']).lower(): #ugly, fix this later
+            paramsList = params.split(',')
+            for x in paramsList:
+                if x.isdigit() or (x[0] == '-' and x.strip('-').isdigit()):
+                    pass
+                HPAmount = paramsList[0]
+                for y in ['A','B','C','D','E','F','G']:
+                    for z in range(13):
+                        if x == squadDict[y][str(z+1)]['ID']:
+                            if x[0] == '-':
+                                    squadDict[y][str(z+1)]['CHP'] -= int(HPAmount)
+                            else:
+                                    squadDict[y][str(z+1)]['CHP'] += int(HPAmount)
+                            upload(filename,squadDict)
+                            return ReplyObject(' ')
+
 
 def gold(robot, cmd, params, user):
     if user.id in hostedList:
@@ -491,9 +537,12 @@ commands = [
     Command(['startgame', 'sg'], startgame),
     Command(['showmap', 'sm'], showmap),
     Command(['move'], move),
+    Command(['hp'], hp),
+    Command(['ac'], addcreature),
     Command(['dehost'], dehost),
     Command(['r', 'roll'], roll),
     Command(['ri'], roomInfo),
+    Command(['ci'], creatureInfo),
     Command(['gold'], gold),
     Command(['get'], get),
     Command(['host'], host),
